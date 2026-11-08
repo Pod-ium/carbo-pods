@@ -13,6 +13,14 @@ add_test(NAME podwriter_script COMMAND ${CMAKE_COMMAND} -E env
     sh -c "rm -rf ${_tmp}/podwriter_sd/* ${_tmp}/podwriter_sd/.fwedit && $<TARGET_FILE:podwriter> && test -s ${_tmp}/podwriter_sd/hello.md && test -s ${_tmp}/podwriter_sd/hello.epub && unzip -p ${_tmp}/podwriter_sd/hello.epub OEBPS/content.opf | grep -q 'content=\"Pod Writer\"'")
 set_tests_properties(podwriter_script PROPERTIES TIMEOUT 60)
 
+# Pod Writer accent keys (F10): ' and ` are dead keys for accented vowels.
+file(MAKE_DIRECTORY ${_tmp}/podwriter_acc_sd)
+set(_akeys "wait:100,text:l'a,f10,wait:100,text:perch'e citt`a `E 'U l' una `` 'x,bksp,bksp,text:'s,shot,ctrl+s,ctrl+u,text:/acc.txt,enter")
+add_test(NAME podwriter_accents COMMAND ${CMAKE_COMMAND} -E env
+    PD_SDCARD=${_tmp}/podwriter_acc_sd PD_KEYS=${_akeys}
+    sh -c "rm -rf ${_tmp}/podwriter_acc_sd/* ${_tmp}/podwriter_acc_sd/.fwedit && $<TARGET_FILE:podwriter> && cmp ${_tmp}/podwriter_acc_sd/acc.txt ${CMAKE_CURRENT_SOURCE_DIR}/podwriter_accents.txt && grep -q accents=1 ${_tmp}/podwriter_acc_sd/.fwedit/settings.txt")
+set_tests_properties(podwriter_accents PROPERTIES TIMEOUT 60)
+
 # Pod Files: make a folder, copy a file into it, cut/paste, delete, hidden
 # toggle, menu, help; the card must end up in the expected state.
 set(_fsd ${_tmp}/files_sd)

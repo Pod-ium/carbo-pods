@@ -25,6 +25,7 @@ Files are edited **directly on the SD card**, so documents far larger than the P
 - Wi-Fi (Pico 2 W) and one-key upload of the ePub to an Xteink X3 / X4 running CrossPoint
 - Syntax colours for Markdown, XML (also URDF, xacro, SDF, SVG, HTML), Python and C/C++, chosen by file extension; F6 toggles them
 - Esc menu with every command, and the display settings as Left/Right choices
+- Accent keys (F10): `'` / `` ` `` then a vowel types á é í ó ú / à è ì ò ù, as on the US International layout
 - Optional one-line status bar: file name, modified mark, language, OVR, position %, battery
 - Remembers font, theme, status bar, syntax colours, current folder, last file and cursor position
 
@@ -38,6 +39,7 @@ Files are edited **directly on the SD card**, so documents far larger than the P
 | F3 | Find next |
 | F6 | Syntax colours on / off |
 | F7 / F8 / F9 | Export ePub / Send to X3 / Wi-Fi |
+| F10 | Accent keys on / off (see below) |
 | Ctrl+N / Ctrl+O / Ctrl+S | New / Open / Save |
 | Ctrl+Shift+S | Save as |
 | Ctrl+F / Ctrl+R / Ctrl+L | Find / Replace all / Go to line |
@@ -50,6 +52,22 @@ Files are edited **directly on the SD card**, so documents far larger than the P
 | Alt+Left / Right / Up / Down | Home / End / Page up / Page down |
 | Home, End, PgUp, PgDn, Del, Ins | As labelled (Ins toggles overwrite) |
 | Tab | Inserts 4 spaces |
+
+## Accent keys
+
+For writing in Italian (or Spanish, French...) without an international keyboard, **F10** turns the accent keys on (and off again; it is also in the Esc menu, and remembered). While they are on, the status bar shows `ACC`, and `'` and `` ` `` work like the dead keys of the US International layout:
+
+| You type | You get |
+|---|---|
+| `` ` `` then a e i o u / A E I O U | à è ì ò ù / À È Ì Ò Ù |
+| `'` then a e i o u / A E I O U | á é í ó ú / Á É Í Ó Ú |
+| `'` or `` ` `` then Space | the plain `'` or `` ` `` |
+| `'` or `` ` `` then the same key | the plain `'` or `` ` `` (once) |
+| `'` or `` ` `` then another character | both characters, e.g. `'s` |
+| `'` or `` ` `` then Backspace or Esc | nothing (cancelled) |
+| `'` or `` ` `` then Enter, an arrow or a command | the plain character, then the key does its usual job |
+
+The pending key is shown next to `ACC` in the status bar. Note that an apostrophe before a vowel now needs a Space after it: `l'amico` is typed `l` `'` Space `amico`. Turn the accent keys off (F10) when writing code or Markdown with many backticks.
 
 ## ePub export and the Xteink X3
 

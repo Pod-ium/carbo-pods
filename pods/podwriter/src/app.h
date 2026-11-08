@@ -49,6 +49,7 @@ private:
         int theme = 0;
         bool status = true;
         bool syntax = true;
+        bool accents = false;  // ' and ` are dead keys for accented vowels (F10)
         std::string file;
         std::string cwd = "/";
         uint32_t pos = 0;
@@ -104,6 +105,8 @@ private:
 
     // editing
     void handleKey(const KeyEvent& ev);
+    bool handleDeadKey(const KeyEvent& ev);
+    void cmdToggleAccents();
     void typeText(const char* s, uint32_t n);
     bool deleteSelection();
     void afterEdit();
@@ -140,6 +143,7 @@ private:
     uint32_t cursor_ = 0, anchor_ = kNone, top_ = 0;
     int goal_ = -1;
     bool overwrite_ = false;
+    char dead_ = 0;  // pending dead key (' or `), 0 if none
 
     const Font* font_ = nullptr;
     int cols_ = 0, rows_ = 0, margin_ = 1, textW_ = 0, x0_ = 0, y0_ = 0;

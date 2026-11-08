@@ -13,6 +13,13 @@ CHANGELOG of hydrogenium-pods.
   tags `v*` and published releases.
 
 ### Pods
+- Pod Writer: **accent keys** for typing accented vowels (Italian and
+  others). F10 (or Esc → Accent keys) turns them on and off; the choice is
+  remembered. While on, `'` and `` ` `` are dead keys, as on the US
+  International layout: `` ` `` then a vowel types à è ì ò ù (À È Ì Ò Ù),
+  `'` then a vowel types á é í ó ú (Á É Í Ó Ú), and either key followed by
+  Space types the plain character. The status bar shows `ACC`, and the
+  pending key next to it.
 - Pod Writer, Pod Files: `main()` ends with `return 0` (needed now that the
   host window renames it).
 

@@ -66,6 +66,7 @@ void App::loadSettings() {
         else if (!strcmp(ln, "theme")) set_.theme = std::max(0, std::min(pd::ui::kThemeCount - 1, atoi(v)));
         else if (!strcmp(ln, "status")) set_.status = atoi(v) != 0;
         else if (!strcmp(ln, "syntax")) set_.syntax = atoi(v) != 0;
+        else if (!strcmp(ln, "accents")) set_.accents = atoi(v) != 0;
         else if (!strcmp(ln, "file")) set_.file = v;
         else if (!strcmp(ln, "cwd")) set_.cwd = v;
         else if (!strcmp(ln, "pos")) set_.pos = uint32_t(strtoul(v, nullptr, 10));
@@ -83,9 +84,10 @@ void App::saveSettings() {
     set_.pos = cursor_;
     static char buf[2048];
     const int n = snprintf(buf, sizeof buf,
-                           "font=%d\ntheme=%d\nstatus=%d\nsyntax=%d\nfile=%s\ncwd=%s\npos=%lu\n"
+                           "font=%d\ntheme=%d\nstatus=%d\nsyntax=%d\naccents=%d\nfile=%s\ncwd=%s\npos=%lu\n"
                            "author=%s\nlang=%s\nx3_url=%s\nx3_dir=%s\nx3_ip=%s\n",
-                           set_.font, set_.theme, set_.status ? 1 : 0, set_.syntax ? 1 : 0, set_.file.c_str(),
+                           set_.font, set_.theme, set_.status ? 1 : 0, set_.syntax ? 1 : 0, set_.accents ? 1 : 0,
+                           set_.file.c_str(),
                            set_.cwd.c_str(), (unsigned long)set_.pos, set_.author.c_str(),
                            set_.lang.c_str(), set_.x3Url.c_str(), set_.x3Dir.c_str(), set_.x3Ip.c_str());
     fs::File f;
@@ -264,8 +266,11 @@ void App::renderStatus(bool force) {
     char bat[12] = "";
     if (battery_ >= 0) snprintf(bat, sizeof bat, "  %s%d%%", (battery_ & 0x80) ? "+" : "", battery_ & 0x7F);
     const char* lang = syn::langName(docLang());
-    snprintf(right, sizeof right, "%s%s%s%s%3u%%%s", net::connected() ? "WiFi  " : "", lang,
-             *lang ? "  " : "", overwrite_ ? "OVR  " : "", pct, bat);
+    // "ACC" while the accent keys are on; a pending dead key is shown after it.
+    char acc[8] = "";
+    if (set_.accents) snprintf(acc, sizeof acc, "ACC%c ", dead_ ? dead_ : ' ');
+    snprintf(right, sizeof right, "%s%s%s%s%s%3u%%%s", net::connected() ? "WiFi  " : "", lang,
+             *lang ? "  " : "", acc, overwrite_ ? "OVR  " : "", pct, bat);
     const int rc = int(strlen(right));
     std::string line = left;
     int lc = pd::gfx::text_cells(line);
@@ -430,7 +435,60 @@ void App::afterEdit() {
     }
 }
 
+// Accent keys (US-International style dead keys), toggled with F10:
+//   ' then a vowel -> acute  (a e i o u -> á é í ó ú, also capitals)
+//   ` then a vowel -> grave  (a e i o u -> à è ì ò ù, also capitals)
+//   ' or ` then Space (or the same key again) -> the plain ' or `
+//   ' or ` then any other character -> both characters, as typed
+//   Backspace or Esc cancels; any other key types the plain ' or ` first.
+static const char* accented(char dead, char c) {
+    static const char kVowels[] = "aeiouAEIOU";
+    static const char* const kGrave[] = {"\xC3\xA0", "\xC3\xA8", "\xC3\xAC", "\xC3\xB2", "\xC3\xB9",
+                                         "\xC3\x80", "\xC3\x88", "\xC3\x8C", "\xC3\x92", "\xC3\x99"};
+    static const char* const kAcute[] = {"\xC3\xA1", "\xC3\xA9", "\xC3\xAD", "\xC3\xB3", "\xC3\xBA",
+                                         "\xC3\x81", "\xC3\x89", "\xC3\x8D", "\xC3\x93", "\xC3\x9A"};
+    const char* v = c ? strchr(kVowels, c) : nullptr;
+    if (!v) return nullptr;
+    return (dead == '`' ? kGrave : kAcute)[v - kVowels];
+}
+
+void App::cmdToggleAccents() {
+    set_.accents = !set_.accents;
+    dead_ = 0;
+    saveSettings();
+    setMessage(set_.accents ? "Accent keys on: ' or ` then a vowel (F10 off)" : "Accent keys off", 3500);
+}
+
+// Returns true when the key was used up by the accent keys.
+bool App::handleDeadKey(const KeyEvent& ev) {
+    const char c = ev.ch();
+    if (!dead_) {
+        if (!set_.accents || (c != '\'' && c != '`')) return false;
+        dead_ = c;  // wait for the next key
+        statusCache_.clear();
+        return true;
+    }
+    if (ev.code == key::Repaint) return false;
+    const char d = dead_;
+    dead_ = 0;
+    statusCache_.clear();
+    if (c && c != '\n') {
+        if (const char* a = accented(d, c)) typeText(a, uint32_t(strlen(a)));
+        else if (c == ' ' || c == d) typeText(&d, 1);
+        else {
+            const char two[2] = {d, c};
+            typeText(two, 2);
+        }
+        return true;
+    }
+    if (!ev.ctrl && !ev.alt && (ev.code == key::Backspace || ev.code == key::Esc)) return true;  // cancel
+    if (ev.code == key::F10) return false;  // turning the accent keys off drops it
+    typeText(&d, 1);  // Enter, arrows, commands...: the plain character first
+    return false;
+}
+
 void App::handleKey(const KeyEvent& ev) {
+    if (handleDeadKey(ev)) return;
     const uint8_t k = ev.code;
     const uint32_t size = tb_.size();
     const bool vert = (k == key::Up || k == key::Down || k == key::PageUp || k == key::PageDown);
@@ -533,6 +591,7 @@ void App::handleKey(const KeyEvent& ev) {
         case key::F7: cmdExportEpub(); return;
         case key::F8: cmdSendToX3(); return;
         case key::F9: cmdWifi(); return;
+        case key::F10: cmdToggleAccents(); return;
         case key::Insert: overwrite_ = !overwrite_; statusCache_.clear(); return;
         case key::Backspace:
             if (!deleteSelection() && cursor_ > 0) {
@@ -589,6 +648,7 @@ void App::cmdMenu() {
     // Settings are edited in place with Left/Right (or Enter) and applied when
     // the menu closes.
     int font = set_.font, theme = set_.theme, status = set_.status, syntax = set_.syntax;
+    int accents = set_.accents;
 
     struct Entry {
         Cmd cmd;
@@ -610,6 +670,7 @@ void App::cmdMenu() {
         {kSetting, pd::ui::choice("Theme", &theme, themeNames, pd::ui::kThemeCount)},
         {kSetting, pd::ui::choice("Status bar", &status, kOnOff, 2)},
         {kSetting, pd::ui::choice("Syntax colours", &syntax, kOnOff, 2)},
+        {kSetting, pd::ui::choice("Accent keys (F10)", &accents, kOnOff, 2)},
         {kExport, pd::ui::action("Export ePub...", "F7")},
         {kSend, pd::ui::action("Send to X3...", "F8")},
         {kWifi, pd::ui::action("Wi-Fi...", "F9")},
@@ -632,10 +693,12 @@ void App::cmdMenu() {
     const int themeBefore = set_.theme;
     const bool syntaxChanged = (syntax != 0) != set_.syntax;
     const bool changed = font != set_.font || theme != set_.theme || (status != 0) != set_.status ||
-                         syntaxChanged;
+                         syntaxChanged || (accents != 0) != set_.accents;
     set_.font = font;
     set_.theme = theme;
     set_.status = status != 0;
+    if ((accents != 0) != set_.accents) dead_ = 0;
+    set_.accents = accents != 0;
     invalidate();
     relayout();
     if (syntaxChanged) applySyntax(syntax != 0);  // saves and reports
@@ -1068,6 +1131,12 @@ void App::showHelp() {
                           "F1 help  F2 font size  F4 status bar",
                           "F5 theme  F6 syntax colours  Ctrl+T stats",
                           "F7 export ePub  F8 send to X3  F9 Wi-Fi",
+                          "F10              Accent keys on / off",
+                          "",
+                          "With accent keys on, ' or ` then a vowel",
+                          "types it accented:  `a = \xC3\xA0   'e = \xC3\xA9",
+                          "(also capitals: `E = \xC3\x88). ' or ` then",
+                          "Space types the plain ' or `.",
                           "",
                           "Files live on the SD card; only your edits",
                           "use RAM, so huge files are fine.",
