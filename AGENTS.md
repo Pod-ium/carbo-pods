@@ -27,7 +27,7 @@ The pods are built on the **PicoPods libraries** of
 pods/podwriter/   CMakeLists.txt, README.md, src/ (main.cpp, app.cpp, app.h, app_share.cpp, diag.h)
 pods/podfiles/    CMakeLists.txt, README.md, src/main.cpp
 tests/            CMakeLists.txt (scripted sessions), check_files.sh, podwriter_accents.txt
-tools/            gate.sh, package_release.sh, build_web_pods.sh, ci_ref.sh, ci_apt.sh
+tools/            gate.sh, package_release.sh, package_test.sh, build_web_pods.sh, ci_ref.sh, ci_apt.sh
 picopods_import.cmake
 ```
 
