@@ -13,6 +13,8 @@ CHANGELOG of hydrogenium-pods.
   tags `v*` and published releases.
 
 ### Pods
+- Pod Files: the "Search failed" dialog shows the "refused: cmd …" line only
+  when a command was actually refused, and always the last radio event.
 - Pod Writer: **accent keys** for typing accented vowels (Italian and
   others). F10 (or Esc → Accent keys) turns them on and off; the choice is
   remembered. While on, `'` and `` ` `` are dead keys, as on the US
