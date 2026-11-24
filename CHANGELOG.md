@@ -18,6 +18,16 @@ CHANGELOG of hydrogenium-pods.
   flashing and testing on hardware.
 
 ### Pods
+- **Pod Tunes 1.0.0** (new, `pods/podtunes`, `podtunes.uf2`): an 8-bit music
+  creator (chiptune tracker) modelled on the "Pixel Plains" web app — 4
+  channels (LEAD, ARP, BASS, DRM), 8 patterns of 32 steps, a song order,
+  square/triangle waves, keyboard note entry (Z..M, Q..U), mute/solo and
+  per-channel volumes, tempo, JSON song export/import in the web app's format
+  and WAV rendering to the SD card, on the terminal's PWM audio. The song
+  autosaves to `/.podtunes/song.json`; the demo theme *PIXEL PLAINS ZONE*
+  loads when there is none. Keys: Space play, Enter play from cursor, Tab
+  track, `[` `]` patterns, Ctrl+E/I/W JSON and WAV, Esc menu; see
+  `pods/podtunes/README.md`. Tested by `podtunes_script` and `podtunes_import`.
 - Pod Files: the "Search failed" dialog shows the "refused: cmd …" line only
   when a command was actually refused, and always the last radio event.
 - Pod Writer: **accent keys** for typing accented vowels (Italian and

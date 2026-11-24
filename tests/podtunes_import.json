@@ -1,0 +1,18 @@
+{
+  "app": "pixel-plains-8bit-music-creator",
+  "version": 1,
+  "savedAt": "2026-01-01T12:00:00.000Z",
+  "song": {
+    "name": "IMPORTED THEME",
+    "tempo": 120,
+    "order": [0, 0],
+    "patterns": [
+      {
+        "lead": { "0": { "n": "A4", "l": 4 }, "8": { "n": "C5", "l": 2 } },
+        "arp": {},
+        "bass": { "0": { "n": "A2", "l": 2 } },
+        "drums": { "0": "kick", "4": "snare", "8": "kick", "12": "snare", "14": "hat" }
+      }
+    ]
+  }
+}

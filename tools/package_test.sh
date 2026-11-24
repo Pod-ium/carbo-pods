@@ -14,7 +14,7 @@ root=$(cd "$(dirname "$0")/.." && pwd)
 out=${1:-$root/dist-test}
 board=${PD_BOARD:-pico2_w}
 build=${TEST_BUILD_DIR:-$root/build-test}
-pods="podwriter podfiles"
+pods="podwriter podfiles podtunes"
 
 cmake -S "$root" -B "$build" -DPD_BOARD="$board" \
     ${PICOPODS_PATH:+-DPICOPODS_PATH=$PICOPODS_PATH} >/dev/null

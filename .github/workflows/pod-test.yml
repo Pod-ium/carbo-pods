@@ -1,8 +1,8 @@
-# Pod test build: build this repository's pods (Pod Writer, Pod Files) for the
-# board chosen in the input (PicoCalc + Pico 2 W by default) and publish them
-# as the repository's test "package": the pre-release tagged `test`, with one
-# <pod>-test.uf2 asset per pod (`podwriter-test.uf2`, `podfiles-test.uf2`) and
-# SHA256SUMS-test.txt.
+# Pod test build: build this repository's pods (Pod Writer, Pod Files, Pod
+# Tunes) for the board chosen in the input (PicoCalc + Pico 2 W by default) and
+# publish them as the repository's test "package": the pre-release tagged
+# `test`, with one <pod>-test.uf2 asset per pod (`podwriter-test.uf2`,
+# `podfiles-test.uf2`, `podtunes-test.uf2`) and SHA256SUMS-test.txt.
 # Run it by hand from the branch to test on hardware:
 #   Actions -> "Pod test build" -> Run workflow (this branch), then download
 #   <pod>-test.uf2 from the `test` release on the Releases page.
