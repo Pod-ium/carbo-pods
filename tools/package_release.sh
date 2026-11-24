@@ -13,7 +13,7 @@ version=${1#v}
 out=${2:-$root/dist}
 board=${PD_BOARD:-pico2_w}
 build=${RELEASE_BUILD_DIR:-$root/build-release}
-pods="podwriter podfiles"
+pods="podwriter podfiles podtunes"
 
 case $version in
     ''|*/*|*' '*) echo "bad version: '$1'" >&2; exit 2 ;;

@@ -14,6 +14,7 @@ Pico 2, Pico W, Pico):
 |---|---|---|---|
 | **Pod Writer** | `pods/podwriter` | 3.0.0 | Text editor: files larger than RAM (SD-backed), undo, syntax colours, ePub export, Send to X3, accent keys |
 | **Pod Files** | `pods/podfiles` | 1.3.0 | File manager: copy / move / delete, Bluetooth, Git clone, USB drive mode |
+| **Pod Tunes** | `pods/podtunes` | 1.0.0 | 8-bit music creator: 4-channel chiptune tracker, JSON songs, WAV export, PWM audio |
 
 The pods are built on the **PicoPods libraries** of
 [hydrogenium-pods](https://github.com/Pod-ium/hydrogenium-pods)
@@ -26,6 +27,7 @@ The pods are built on the **PicoPods libraries** of
 ```
 pods/podwriter/   CMakeLists.txt, README.md, src/ (main.cpp, app.cpp, app.h, app_share.cpp, diag.h)
 pods/podfiles/    CMakeLists.txt, README.md, src/main.cpp
+pods/podtunes/    CMakeLists.txt, README.md, src/ (main.cpp, tracker.cpp, tracker.h)
 tests/            CMakeLists.txt (scripted sessions), check_files.sh, podwriter_accents.txt
 tools/            gate.sh, package_release.sh, package_test.sh, build_web_pods.sh, ci_ref.sh, ci_apt.sh
 picopods_import.cmake
@@ -68,6 +70,8 @@ picopods_import.cmake
 - **Pod Files**: work folder `/.podfiles/` (settings, `wifi.txt`, Bluetooth
   pairings); an old `/.picocalc_files/` is renamed once on first start
   (test `podfiles_migrate`). Keep that migration working.
+- **Pod Tunes**: work folder `/.podtunes/` (settings, autosaved
+  `song.json`).
 - Wi-Fi host name `PodWriter`; ePub generator metadata "Pod Writer" (checked
   by `podwriter_script`).
 
@@ -80,8 +84,8 @@ CMake ≥ 3.13, Ninja, C++17 compiler, Python 3, `libmbedtls-dev`,
 | Gate | Command | Must |
 |---|---|---|
 | G-host | `PICO_SDK_PATH=… tools/gate.sh host` | PC build, every scripted session passes (the Bluetooth ones need `PICO_SDK_PATH`) |
-| G-fw | `PICO_SDK_PATH=… tools/gate.sh fw pico2_w pico2 pico_w pico` | both pods link to `.uf2` on **all four** boards |
-| G-web | `PICO_SDK_PATH=… tools/build_web_pods.sh` | both pods build for the browser (`dist/web-pods`) |
+| G-fw | `PICO_SDK_PATH=… tools/gate.sh fw pico2_w pico2 pico_w pico` | all pods link to `.uf2` on **all four** boards |
+| G-web | `PICO_SDK_PATH=… tools/build_web_pods.sh` | all pods build for the browser (`dist/web-pods`) |
 
 If you also changed hydrogenium-pods, add `PICOPODS_PATH=/path/to/hydrogenium-pods`.
 Logs: `build-gate/*.log`.

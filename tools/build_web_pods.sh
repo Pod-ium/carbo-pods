@@ -13,7 +13,7 @@ set -eu
 root=$(cd "$(dirname "$0")/.." && pwd)
 out=${1:-$root/dist/web-pods}
 build=${WEB_BUILD_DIR:-$root/build-web}
-pods="podwriter podfiles"
+pods="podwriter podfiles podtunes"
 
 command -v emcmake >/dev/null || { echo "emcmake not found: source emsdk_env.sh first"; exit 1; }
 : "${PICO_SDK_PATH:?set PICO_SDK_PATH (the browser build uses its mbedTLS)}"

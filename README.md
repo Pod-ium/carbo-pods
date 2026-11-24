@@ -9,6 +9,7 @@
 |---|---|---|
 | **Pod Writer** 3.0 | [`pods/podwriter`](pods/podwriter) | Text editor: files larger than RAM (SD-backed), undo, syntax colours, ePub export |
 | **Pod Files** 1.3 | [`pods/podfiles`](pods/podfiles) | File manager: copy / move / delete, Bluetooth, Git clone, USB drive mode |
+| **Pod Tunes** 1.0 | [`pods/podtunes`](pods/podtunes) | 8-bit music creator: 4-channel chiptune tracker, JSON songs, WAV export |
 
 Part of the Pod-ium family of PicoCalc firmwares: [hydrogenium-pods](https://github.com/Pod-ium/hydrogenium-pods)
 (libraries and examples), [helium-pods](https://github.com/Pod-ium/helium-pods) (games),
@@ -52,18 +53,18 @@ the SD card and start it from [UF2 Loader](https://github.com/pelrun/uf2loader).
 ## CI and releases
 
 - **Pull requests and pushes** (`.github/workflows/ci.yml`): G-host (PC build
-  + 5 scripted sessions; the Bluetooth ones need `PICO_SDK_PATH`), G-fw (`pico2_w`, `pico2`, `pico_w`, `pico`; `.uf2` files kept as artifacts
+  + 8 scripted sessions; the Bluetooth ones need `PICO_SDK_PATH`), G-fw (`pico2_w`, `pico2`, `pico_w`, `pico`; `.uf2` files kept as artifacts
   `carbo-<board>`) and G-web (artifact `carbo-web-pods`).
 - **Tags and releases** (`.github/workflows/release.yml`): pushing a tag
   `v*` creates its GitHub release, and publishing a release from the UI
-  works too; either way `podwriter_<version>.uf2`, `podfiles_<version>.uf2` and `SHA256SUMS_<version>.txt` are attached
+  works too; either way `podwriter_<version>.uf2`, `podfiles_<version>.uf2`, `podtunes_<version>.uf2` and `SHA256SUMS_<version>.txt` are attached
   (tag `v1.2.0` gives version `1.2.0`). Locally:
   `PICO_SDK_PATH=… tools/package_release.sh <version>`. It can also be run
   by hand from the Actions tab for an existing tag.
 - **Test builds for hardware** (`.github/workflows/pod-test.yml`): run by
   hand from the Actions tab on any branch; builds the pods for the chosen
   board and publishes them to the `test` pre-release as `podwriter-test.uf2`,
-  `podfiles-test.uf2` and `SHA256SUMS-test.txt`. Locally:
+  `podfiles-test.uf2`, `podtunes-test.uf2` and `SHA256SUMS-test.txt`. Locally:
   `PICO_SDK_PATH=… tools/package_test.sh`.
 - **Which libraries.** CI and releases build against hydrogenium-pods
   `main`, or the ref in the repository variable `PICOPODS_REF` (set it to a
@@ -74,7 +75,7 @@ the SD card and start it from [UF2 Loader](https://github.com/pelrun/uf2loader).
 ## Layout
 
 ```
-pods/                   podwriter/ podfiles/
+pods/                   podwriter/ podfiles/ podtunes/
 tests/                  the pods' scripted host sessions (ctest), check_files.sh
 tools/                  gate.sh (merge gates), package_release.sh (release .uf2),
                         build_web_pods.sh (.pod.js), ci_ref.sh (CI: sibling repository ref)

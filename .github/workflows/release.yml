@@ -1,6 +1,7 @@
-# Release: build Pod Writer, Pod Files for the PicoCalc + Pico 2 W and attach
-# them to the GitHub release as podwriter_<version>.uf2, podfiles_<version>.uf2
-# (e.g. podwriter_1.0.0.uf2 for tag v1.0.0), with a SHA256SUMS file.
+# Release: build Pod Writer, Pod Files, Pod Tunes for the PicoCalc + Pico 2 W
+# and attach them to the GitHub release as podwriter_<version>.uf2,
+# podfiles_<version>.uf2, podtunes_<version>.uf2 (e.g. podwriter_1.0.0.uf2 for
+# tag v1.0.0), with a SHA256SUMS file.
 #   - pushing a tag v* creates the release (notes generated from the commits)
 #     if it does not exist yet, then attaches the files;
 #   - publishing a release from the GitHub UI attaches them to it;

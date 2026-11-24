@@ -18,6 +18,7 @@ include(${PICOPODS_PATH}/cmake/picopods.cmake)
 # Pods
 add_subdirectory(pods/podwriter)
 add_subdirectory(pods/podfiles)
+add_subdirectory(pods/podtunes)
 
 if(PD_HOST AND NOT EMSCRIPTEN)   # the browser build has pods only
     enable_testing()

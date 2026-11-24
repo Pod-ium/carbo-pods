@@ -53,6 +53,26 @@ if(PD_HAS_BT)
     set_tests_properties(podfiles_bt_receive PROPERTIES TIMEOUT 60)
 endif()
 
+# Pod Tunes: place notes from the keyboard (Z on LEAD, X on ARP after Tab,
+# Z again on pattern P2 after ]), play and stop, export the song as JSON and
+# render a WAV; the card must hold the exported files and the autosaved song.
+file(MAKE_DIRECTORY ${_tmp}/podtunes_sd)
+set(_tkeys "wait:400,z,tab,x,],z,space,wait:700,space,wait:500")
+set(_tkeys "${_tkeys},ctrl+e,wait:100,ctrl+u,text:/song.json,enter,wait:400")
+set(_tkeys "${_tkeys},ctrl+w,wait:100,ctrl+u,text:/out.wav,enter,wait:3000")
+add_test(NAME podtunes_script COMMAND ${CMAKE_COMMAND} -E env
+    PD_SDCARD=${_tmp}/podtunes_sd PD_FRAMES=${_tmp}/podtunes_frames PD_KEYS=${_tkeys}
+    sh -c "rm -rf ${_tmp}/podtunes_sd/* ${_tmp}/podtunes_sd/.podtunes && $<TARGET_FILE:podtunes> && test -s ${_tmp}/podtunes_sd/.podtunes/song.json && grep -q 'PIXEL PLAINS ZONE' ${_tmp}/podtunes_sd/.podtunes/song.json && grep -q '\"n\":\"C4\"' ${_tmp}/podtunes_sd/.podtunes/song.json && grep -q '\"n\":\"D4\"' ${_tmp}/podtunes_sd/.podtunes/song.json && grep -q '\"arp\":{\"0\":{\"n\":\"C4\"' ${_tmp}/podtunes_sd/.podtunes/song.json && test -s ${_tmp}/podtunes_sd/song.json && grep -q '\"app\":\"pod-tunes\"' ${_tmp}/podtunes_sd/song.json && head -c 4 ${_tmp}/podtunes_sd/out.wav | grep -q RIFF && test $(stat -c %s ${_tmp}/podtunes_sd/out.wav) -gt 100000")
+set_tests_properties(podtunes_script PROPERTIES TIMEOUT 60)
+
+# Pod Tunes: import a song JSON in the web creator's format through the file
+# browser; the autosaved song must become the imported one.
+set(_isd ${_tmp}/podtunes_import_sd)
+add_test(NAME podtunes_import COMMAND ${CMAKE_COMMAND} -E env
+    PD_SDCARD=${_isd} "PD_KEYS=wait:400,ctrl+i,wait:300,enter,wait:700"
+    sh -c "rm -rf ${_isd} && mkdir -p ${_isd} && cp ${CMAKE_CURRENT_SOURCE_DIR}/podtunes_import.json ${_isd}/tune.json && $<TARGET_FILE:podtunes> && grep -q 'IMPORTED THEME' ${_isd}/.podtunes/song.json && grep -q '\"n\":\"A4\"' ${_isd}/.podtunes/song.json && grep -q '\"0\":\"kick\"' ${_isd}/.podtunes/song.json && grep -q '\[0,0\]' ${_isd}/.podtunes/song.json")
+set_tests_properties(podtunes_import PROPERTIES TIMEOUT 60)
+
 # Pairing started by the phone while the device list is open: the request must
 # be shown and answered from inside the menu (ui idle hook + key::Repaint).
 if(PD_HAS_BT)
