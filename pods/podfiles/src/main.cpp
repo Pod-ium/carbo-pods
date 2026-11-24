@@ -1067,11 +1067,15 @@ std::string FileManager::bt_pick_device() {
         pd::bt::scan_stop();
         if (!pd::bt::scan_error().empty()) {
             const pd::bt::Diag d = pd::bt::diag();
-            char b[64];
-            snprintf(b, sizeof b, "refused: cmd 0x%04X status 0x%02X (%lu)", d.failed_opcode, d.failed_status,
-                     (unsigned long)d.failed_count);
-            ui::message(ui_, "Bluetooth", {"Search failed:", pd::bt::scan_error(), b, "Please send a photo of this."},
-                        ui_.theme().error);
+            std::vector<std::string> lines = {"Search failed:", pd::bt::scan_error(), "last event: " + d.last_event};
+            if (d.failed_count) {
+                char b[64];
+                snprintf(b, sizeof b, "refused: cmd 0x%04X status 0x%02X (%lu)", d.failed_opcode, d.failed_status,
+                         (unsigned long)d.failed_count);
+                lines.push_back(b);
+            }
+            lines.push_back("Please send a photo of this.");
+            ui::message(ui_, "Bluetooth", lines, ui_.theme().error);
             ui_.kbd.flush();
             draw_all();
             return "";
