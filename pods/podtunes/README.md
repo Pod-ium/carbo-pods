@@ -47,6 +47,6 @@ An 8-bit music creator (chiptune tracker) for the ClockworkPi PicoCalc (Pico 2 W
 
 Part of [carbo-pods](https://github.com/Pod-ium/carbo-pods): `cmake --build build --target podtunes` gives `build/pods/podtunes/podtunes.uf2`. Host simulator: `PD_SDCARD=./sd build-host/pods/podtunes/podtunes` (with SDL2 installed it opens a window with sound), and `ctest -R podtunes` runs its scripted sessions.
 
-## Not yet tested on hardware
+## Notes from hardware
 
-Everything was tested in the host simulator (screens, keys, JSON/WAV export, import); the device build is clean but has not run on a PicoCalc. First checks worth doing: sound on the PWM output (volume, no crackle), the keyboard feel while playing, and a WAV render of the demo song on the card.
+The first device boot HardFaulted during start: the pod kept its state (~3.4 KB `App`, ~1.9 KB `Song` temporaries, a 2.3 KB menu array) in stack locals, but the Pico SDK gives `main()` a 2 KB stack. Fixed by keeping that state in static storage (the PodBoy convention); the host simulator never noticed because its stack is large. Still worth checking on a PicoCalc: sound on the PWM output (volume, no crackle), the keyboard feel while playing, and a WAV render of the demo song on the card.
