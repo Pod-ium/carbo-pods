@@ -48,6 +48,7 @@ struct Song {
     int tempo = 152;           // BPM
     std::vector<int> order;    // pattern indices played in song mode
     Pattern patterns[kPatterns];
+    void reset();              // back to an empty song, without a temporary
 };
 
 struct EditState {
