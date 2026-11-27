@@ -489,12 +489,11 @@ void import_json_ui(App& a) {
     a.ui.kbd.flush();
     if (!ui::browse(a.ui, "Import song", dir, file, opt)) return;
     std::string text;
-    Song s;
-    if (!pd::fs::read_file(file.c_str(), text, 1u << 20) || !song_from_json(text, s)) {
+    if (!pd::fs::read_file(file.c_str(), text, 1u << 20) || !song_from_json(text, a.song)) {
         ui::message(a.ui, "Import song", {"Invalid song file:", file});
         return;
     }
-    a.song = std::move(s);
+    // song_from_json only writes its output on success, so a.song is intact above
     a.ed.cur_pat = 0;
     a.ed.cursor_step = 0;
     a.ed.cursor_row = std::min(a.ed.cursor_row, rows_of(a) - 1);
@@ -601,40 +600,39 @@ void main_menu(App& a) {
         M_VOL0, M_VOL1, M_VOL2, M_VOL3, M_TEMPO, M_NAME, M_EXP, M_IMP, M_WAV, M_RESET,
         M_THEME, M_MVOL, M_HELP, M_ABOUT, M_REBOOT, M_COUNT
     };
-    ui::MenuItem items[M_COUNT] = {
-        ui::action("Resume", "Esc"),
-        ui::action(a.player.playing() ? "Stop" : "Play", "Space"),
-        ui::action("Play from cursor", "Enter"),
-        ui::choice("Mode", &mode_idx, kModeNames, 2),
-        ui::action("Pattern -", "[ / F5"),
-        ui::action("Pattern +", "] / F6"),
-        ui::choice("Jump to pattern", &a.ed.cur_pat, pat_lbl, kPatterns),
-        ui::action("Copy pattern", "F7"),
-        ui::action("Clear pattern", "F8"),
-        ui::choice("Track", &a.ed.edit_ch, kChannelNames, kChannels),
-        ui::choice("Wave", &wave_idx, kWaveNames, 4),
-        ui::range("Octave", &a.ed.octave, 1, 7, 1, "%d"),
-        ui::choice("Note length", &len_idx, kLenNames, 4),
-        ui::action("Mute/solo LEAD", mute_hint[0].c_str()),
-        ui::action("Mute/solo ARP", mute_hint[1].c_str()),
-        ui::action("Mute/solo BASS", mute_hint[2].c_str()),
-        ui::action("Mute/solo DRM", mute_hint[3].c_str()),
-        ui::range("Volume LEAD", &a.ed.ch[0].vol, 0, 100, 5, "%d%%"),
-        ui::range("Volume ARP", &a.ed.ch[1].vol, 0, 100, 5, "%d%%"),
-        ui::range("Volume BASS", &a.ed.ch[2].vol, 0, 100, 5, "%d%%"),
-        ui::range("Volume DRM", &a.ed.ch[3].vol, 0, 100, 5, "%d%%"),
-        ui::range("Tempo", &a.song.tempo, 60, 240, 1, "%d BPM"),
-        ui::action("Song name..."),
-        ui::action("Export JSON", "Ctrl+E"),
-        ui::action("Import JSON", "Ctrl+I"),
-        ui::action("Export WAV", "Ctrl+W"),
-        ui::action("Reset to demo song", "Ctrl+R"),
-        ui::choice("Theme", &a.set.theme, kThemeNames, 3),
-        ui::range("Master volume", &a.set.volume, 0, 100, 5, "%d%%"),
-        ui::action("Help", "F1"),
-        ui::action("About"),
-        ui::action("Save and reboot"),
-    };
+    static ui::MenuItem items[M_COUNT];   // static: 32 x 72 B, too big for the 2 KB stack
+    items[M_RESUME] = ui::action("Resume", "Esc");
+    items[M_PLAY] = ui::action(a.player.playing() ? "Stop" : "Play", "Space");
+    items[M_FROM] = ui::action("Play from cursor", "Enter");
+    items[M_MODE] = ui::choice("Mode", &mode_idx, kModeNames, 2);
+    items[M_PATP] = ui::action("Pattern -", "[ / F5");
+    items[M_PATP2] = ui::action("Pattern +", "] / F6");
+    items[M_JUMP] = ui::choice("Jump to pattern", &a.ed.cur_pat, pat_lbl, kPatterns);
+    items[M_COPY] = ui::action("Copy pattern", "F7");
+    items[M_CLEAR] = ui::action("Clear pattern", "F8");
+    items[M_TRACK] = ui::choice("Track", &a.ed.edit_ch, kChannelNames, kChannels);
+    items[M_WAVE] = ui::choice("Wave", &wave_idx, kWaveNames, 4);
+    items[M_OCT] = ui::range("Octave", &a.ed.octave, 1, 7, 1, "%d");
+    items[M_LEN] = ui::choice("Note length", &len_idx, kLenNames, 4);
+    items[M_MUTE0] = ui::action("Mute/solo LEAD", mute_hint[0].c_str());
+    items[M_MUTE1] = ui::action("Mute/solo ARP", mute_hint[1].c_str());
+    items[M_MUTE2] = ui::action("Mute/solo BASS", mute_hint[2].c_str());
+    items[M_MUTE3] = ui::action("Mute/solo DRM", mute_hint[3].c_str());
+    items[M_VOL0] = ui::range("Volume LEAD", &a.ed.ch[0].vol, 0, 100, 5, "%d%%");
+    items[M_VOL1] = ui::range("Volume ARP", &a.ed.ch[1].vol, 0, 100, 5, "%d%%");
+    items[M_VOL2] = ui::range("Volume BASS", &a.ed.ch[2].vol, 0, 100, 5, "%d%%");
+    items[M_VOL3] = ui::range("Volume DRM", &a.ed.ch[3].vol, 0, 100, 5, "%d%%");
+    items[M_TEMPO] = ui::range("Tempo", &a.song.tempo, 60, 240, 1, "%d BPM");
+    items[M_NAME] = ui::action("Song name...");
+    items[M_EXP] = ui::action("Export JSON", "Ctrl+E");
+    items[M_IMP] = ui::action("Import JSON", "Ctrl+I");
+    items[M_WAV] = ui::action("Export WAV", "Ctrl+W");
+    items[M_RESET] = ui::action("Reset to demo song", "Ctrl+R");
+    items[M_THEME] = ui::choice("Theme", &a.set.theme, kThemeNames, 3);
+    items[M_MVOL] = ui::range("Master volume", &a.set.volume, 0, 100, 5, "%d%%");
+    items[M_HELP] = ui::action("Help", "F1");
+    items[M_ABOUT] = ui::action("About");
+    items[M_REBOOT] = ui::action("Save and reboot");
     ui::MenuOptions opt;
     opt.footer = "Pod Tunes " PD_APP_VERSION;
     opt.on_change = [&](int) {
@@ -749,7 +747,7 @@ int main() {
     pd::diag::stage(kDisplay);
 
     pd::ui::Context ui(term.keyboard(), pd::ui::THEME_NIGHT);
-    App a(term, ui);
+    static App a(term, ui);   // static: App is ~3.4 KB, the device main stack is 2 KB
 
     pd::diag::stage(kSd);
     pd::app::mount_storage(ui);
@@ -772,7 +770,7 @@ int main() {
         a.audio->set_volume(a.set.volume);
     }
     a.player.attach(&a.song, &a.ed, &a.synth);
-    ui.idle = [&a]() { pump(a); };
+    ui.idle = []() { pump(a); };   // a is static: no capture needed
 
     pd::diag::stage(kReady);
     pd::diag::done();

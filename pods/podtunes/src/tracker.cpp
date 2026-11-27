@@ -83,6 +83,13 @@ void Pattern::clear() {
     for (int st = 0; st < kSteps; ++st) drums[st] = DRUM_NONE;
 }
 
+void Song::reset() {
+    name = "UNTITLED";
+    tempo = 152;
+    order.clear();
+    for (int p = 0; p < kPatterns; ++p) patterns[p].clear();
+}
+
 void build_demo(Song& s) {
     struct Lead { const char* n; int len; };
     static const Lead LEAD[] = {
@@ -108,7 +115,7 @@ void build_demo(Song& s) {
     static const int PROG[8] = {0, 0, 1, 2, 3, 3, 1, 2};   // C C F G Am Am F G
     static const int ARP_PAT[16] = {0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1};
 
-    s = Song{};
+    s.reset();
     s.name = "PIXEL PLAINS ZONE";
     s.tempo = 152;
     s.order = {0, 1, 2, 3};
@@ -391,7 +398,8 @@ bool song_from_json(const std::string& text, Song& out) {
     if (!s) s = &root;
     if (s->type != JV::Obj) return false;
 
-    Song ns{};
+    static Song ns;   // static: a Song is ~2 KB, too big for the device stack
+    ns.reset();
     if (const JV* v = s->find("name"); v && v->type == JV::Str) ns.name = v->str.substr(0, 24);
     if (ns.name.empty()) ns.name = "UNTITLED";
     if (const JV* v = s->find("tempo"); v && v->type == JV::Num) {
@@ -441,7 +449,7 @@ bool song_from_json(const std::string& text, Song& out) {
             }
         }
     }
-    out = std::move(ns);
+    out = ns;
     return true;
 }
 
