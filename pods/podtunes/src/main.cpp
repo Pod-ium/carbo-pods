@@ -233,6 +233,7 @@ void draw_header(App& a, const Geom& g, const gfx::Font& f) {
 
 void draw_levels(App& a, const Geom& g) {
     int grid_h = g.rows * g.row_h;
+    gfx::fill(g.right_x + 1, g.grid_y, g.W - g.right_x - 1, grid_h, kBg);   // erase, then bars
     const float* lv = a.synth.ch_levels();
     for (int c = 0; c < kChannels; ++c) {
         int x = g.right_x + 2 + c * 7;
@@ -264,14 +265,8 @@ void draw_grid(App& a, const Geom& g, const gfx::Font& f) {
         int x = g.grid_x + c * g.col_w;
         gfx::vline(x, g.grid_y, grid_h, c % 16 == 0 ? kLine16 : c % 4 == 0 ? kLine4 : kLine0);
     }
-    if (a.player.playing()) {
-        SongPos pp = a.player.pos();
-        if (pp.pat == ed.cur_pat) {
-            int px = g.grid_x + pp.step * g.col_w;
-            gfx::fill(px, g.grid_y, g.col_w, grid_h, kPlayhead);
-            gfx::vline(px, g.grid_y, grid_h, kWhite);
-        }
-    }
+    // No playhead column here: repainting it every step while playing costs
+    // a tall fill and tears the notes. The header shows the playhead instead.
     if (drums) {
         for (int st = 0; st < kSteps; ++st) {
             uint8_t d = pat.drums[st];
@@ -337,6 +332,16 @@ void draw_line_b(App& a, const Geom& g, const gfx::Font& f) {
     std::string right = std::string(kChannelNames[a.ed.edit_ch]) + " " + wave + " O" +
                         std::to_string(a.ed.octave) + " L" + std::to_string(a.ed.note_len);
     gfx::text(g.W - 3 - gfx::text_cells(right) * f.w, g.lineB_y, 0, f, right, kChColor[a.ed.edit_ch], kBg);
+}
+
+// Cheap per-frame update while playing: only the animated strips, no full
+// clear (a full-screen clear is ~200 KB over SPI - it flashes and starves
+// the audio pump). Full draw() runs only when the state actually changed.
+void draw_overlay(App& a) {
+    Geom g = geom_of(a);
+    draw_viz(a, g);
+    draw_header(a, g, gfx::font(gfx::FONT_6x12));
+    draw_levels(a, g);
 }
 
 void draw(App& a) {
@@ -776,9 +781,9 @@ int main() {
     pd::diag::done();
     toast(a, loaded ? "WELCOME BACK" : "DEMO SONG LOADED - ESC FOR MENU");
 
-    uint32_t last_draw = 0;
+    uint32_t last_overlay = 0;
     for (;;) {
-        pump(a);
+        pump(a);   // audio first: keep the PWM buffer fed before any drawing
         pd::input::KeyEvent ev;
         while (ui.kbd.poll(ev)) handle_key(a, ev);
         if (a.song_dirty && pd::sys::reached(a.last_edit_ms + 400)) {
@@ -789,10 +794,13 @@ int main() {
             a.toast_until = 0;
             a.dirty = true;
         }
-        if (a.dirty || (a.player.playing() && pd::sys::reached(last_draw + 90))) {
+        if (a.dirty) {
             draw(a);
-            last_draw = pd::sys::now_ms();
+            last_overlay = pd::sys::now_ms();
             a.dirty = false;
+        } else if (a.player.playing() && pd::sys::reached(last_overlay + 100)) {
+            draw_overlay(a);   // small partial redraw, ~10 Hz while playing
+            last_overlay = pd::sys::now_ms();
         }
         pd::sys::sleep_ms(2);
     }

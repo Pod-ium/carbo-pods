@@ -49,4 +49,6 @@ Part of [carbo-pods](https://github.com/Pod-ium/carbo-pods): `cmake --build buil
 
 ## Notes from hardware
 
-The first device boot HardFaulted during start: the pod kept its state (~3.4 KB `App`, ~1.9 KB `Song` temporaries, a 2.3 KB menu array) in stack locals, but the Pico SDK gives `main()` a 2 KB stack. Fixed by keeping that state in static storage (the PodBoy convention); the host simulator never noticed because its stack is large. Still worth checking on a PicoCalc: sound on the PWM output (volume, no crackle), the keyboard feel while playing, and a WAV render of the demo song on the card.
+The first device boot HardFaulted during start: the pod kept its state (~3.4 KB `App`, ~1.9 KB `Song` temporaries, a 2.3 KB menu array) in stack locals, but the Pico SDK gives `main()` a 2 KB stack. Fixed by keeping that state in static storage (the PodBoy convention); the host simulator never noticed because its stack is large.
+
+Second hardware finding: while playing, the main loop redrew the whole screen (full `gfx::clear`, ~200 KB over SPI) every 90 ms, which flashed the screen and starved the audio pump (buffer underruns). Now full redraws happen only on state changes; during playback a small overlay (viz strip, header playhead, level bars) is repainted at ~10 Hz and audio is pumped first each iteration. Still worth checking on a PicoCalc: sound on the PWM output (volume, no crackle), the keyboard feel while playing, and a WAV render of the demo song on the card.
